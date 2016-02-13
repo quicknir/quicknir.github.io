@@ -35,15 +35,39 @@ Vivamus sagittis lacus vel augue rutrum faucibus dolor auctor. Duis mollis, est 
 
 Cum sociis natoque penatibus et magnis dis `code element` montes, nascetur ridiculus mus.
 
-{% highlight js %}
-// Example can be run directly in your JavaScript console
+{% highlight cpp linenos %}
+class A {
+  void func(double y) {
+    return;
+  }
+}
+012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+//012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+// comment
+// comment
+// comment
+// comment
+// comment
+// comment
+// comment
+{% endhighlight %}
 
-// Create a function that takes two arguments and returns the sum of those arguments
-var adder = new Function("a", "b", "return a + b");
-
-// Call the function
-adder(2, 6);
-// > 8
+{% highlight cpp %}
+class A {
+  void func(double y) {
+    return;
+  }
+}
+// comment
+// comment
+// comment
+012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+//012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+// comment
+// comment
+// comment
+// comment
+// comment
 {% endhighlight %}
 
 Aenean lacinia bibendum nulla sed consectetur. Etiam porta sem malesuada magna mollis euismod. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.
