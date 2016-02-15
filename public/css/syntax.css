@@ -83,14 +83,19 @@
  */
 .highlight table { margin-bottom: 0; border: none; }
 
+/* The white-space and word-wrap directives ensure that code lines are not
+ * wrapped, and instead we end up with horizontal scroll bars. The next
+ * block handles this for code blocks with line numbers, the next for those
+ * without.
+ */
 .highlight td.code pre {
 	padding: 0;
-	white-space: pre; /* Solves horizontal scroll via black magic */
+	white-space: pre;
 }
 
-/* Doesn't seem to work; thus no horizontal scroll when line numbers absent */
 .highlight > pre {
-	white-space: pre; /* Solves horizontal scroll via black magic */
+	white-space: pre;
+	word-wrap: normal;
 }
 
 /* Get rid of borders around code */
@@ -122,5 +127,3 @@
 	padding: 0; 
 	word-break: keep-all;
 }
-
-
