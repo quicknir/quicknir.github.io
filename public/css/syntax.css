@@ -108,7 +108,8 @@
 .highlight td.gutter.gl { 
 	width: 1px;
 	border: none;
-	border-right: 1px solid #e5e5e5;
+	border-right: 1px solid #93a1a1;
+	color: #93a1a1;
 	word-break: keep-all;
 	padding: 0 0.3em;
 	white-space: normal;
