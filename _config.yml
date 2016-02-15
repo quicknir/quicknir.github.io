@@ -18,3 +18,14 @@ author:
 
 # Custom vars
 version:             1.0.0
+
+# Defaults
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      comments: true
+
+# Disqus
+disqus: "turingtested"
