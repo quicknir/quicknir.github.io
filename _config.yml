@@ -24,6 +24,7 @@ defaults:
     scope:
       path: ""
     values:
+      disqusid: "1"
       comments: true
 
 # Disqus
