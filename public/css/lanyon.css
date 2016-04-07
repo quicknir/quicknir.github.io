@@ -305,7 +305,7 @@ a.sidebar-nav-item:focus {
 
 .page,
 .post {
-  margin-bottom: 3em;
+  margin-bottom: 2em;
 }
 
 /* Blog post or page title */
@@ -362,11 +362,10 @@ a.sidebar-nav-item:focus {
 
 .pagination {
   overflow: hidden; /* clearfix */
-  margin-left: -1rem;
-  margin-right: -1rem;
   font-family: "PT Sans", Helvetica, Arial, sans-serif;
   color: #93a1a1;
   text-align: center;
+  width: 100%;
 }
 
 /* Pagination items can be `span`s or `a`s */
