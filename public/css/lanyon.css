@@ -411,6 +411,10 @@ a.pagination-item:hover {
 	color: #586e75;
 }
 
+.hn-button {
+	height:22px;
+}
+
 
 /*
  * Reverse layout
