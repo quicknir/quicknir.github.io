@@ -319,6 +319,11 @@ a.sidebar-nav-item:focus {
   margin-top: 0;
 }
 
+.post-author {
+  display: block;
+  margin-bottom: 1rem;
+  color: #586e75;
+}
 /* Meta data line below post title */
 .post-date {
   display: block;
