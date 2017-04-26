@@ -180,6 +180,12 @@ pre code {
   background-color: transparent;
 }
 
+pre.code_subtitle {
+    margin-bottom: -1rem;
+    padding: 0.25rem;
+    border-bottom: 1px solid #93a1a1;
+}
+
 /* Pygments via Jekyll */
 .highlight {
   margin-bottom: 1rem;
