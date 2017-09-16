@@ -119,7 +119,8 @@ class Factory {
 
     static bool registerT() {
       const auto name = T::name;
-      Factory::data()[name] = [](Args... args) -> std::unique_ptr<Base> {
+      Factory::data()[name] =
+          [](Args... args) -> std::unique_ptr<Base> {
         return std::make_unique<T>(args...);
       };
       return true;
@@ -178,7 +179,7 @@ we can write:
 {% highlight cpp linenos %}
 std::string demangle(const char *name) {
 
-  int status = -4; // some arbitrary value to eliminate the compiler warning
+  int status = -4;
 
   std::unique_ptr<char, void (*)(void *)> res{
       abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
