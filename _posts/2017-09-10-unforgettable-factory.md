@@ -5,7 +5,7 @@ title: "Unforgettable Factory Registration"
 
 Using a factory is a common pattern to use when we are working with polymorphic
 objects. It exists to solve a very basic issue in C++: in order to construct
-something you must name its type. But the entire point of runtime polymoprhism
+something you must name its type. But the entire point of runtime polymorphism
 is often that we cannot name the type, because we won't know it until runtime.
 
 The most basic factory would just consist of some `if` statements coupled
@@ -37,12 +37,12 @@ This is usually by done changing the logic of the factory from code---multiple
 like this:
 
 {% highlight cpp linenos %}
-unordered_map<string, unique_ptr<Animal>(*)(int)> factory_map;
+std::unordered_map<string, unique_ptr<Animal>(*)(int)> factory_map;
 factory_map["Dog"] = Dog::make;
 factory_map["Cat"] = Cat::make;
-unique_ptr<Animal> makeAnimal(const std::string& type, int number)
+std::unique_ptr<Animal> makeAnimal(const std::string& type, int number)
 {
-  return factory_map.at(type)(int);
+  return factory_map.at(type)(number);
 }
 {% endhighlight %}
 
