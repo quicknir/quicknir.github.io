@@ -340,7 +340,7 @@ Cat: 2
 ```
 
 as you would expect. See a full copy of the working code
-[here](http://coliru.stacked-crooked.com/a/0410251ac74729ad).
+[here](http://coliru.stacked-crooked.com/a/bb60d154a3baaab5).
 
 We've managed here to separate out much of the boilerplate that often goes with
 writing polymorphic code in C++, with a relatively small and simple amount of
