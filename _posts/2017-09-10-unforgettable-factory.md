@@ -29,10 +29,10 @@ factory somewhere that's written like this, it will be impossible for the user
 to inject their own classes into the library.
 
 Aside from very simple use cases, better factories tend to predicated on
-allowing classes to themselves for construction by the factory; this allows
-library code to construct user classes that were written afterwards, and avoids
-the issue of a central function that needs to change with each new class. This
-is usually by done changing the logic of the factory from code---multiple
+allowing classes to register themselves for construction by the factory; this
+allows library code to construct user classes that were written afterwards, and
+avoids the issue of a central function that needs to change with each new class.
+This is usually by done changing the logic of the factory from code---multiple
 `if`s---into data, in particular an associative map. It usually looks something
 like this:
 
@@ -69,15 +69,16 @@ Let's start by a sketch of some of the functionality that we want. Because this
 is all going to be automated, I'm going to opt to simply inject the factory
 interface directly into the base class using the Curiously Recurring Template
 Pattern
-[CRTP](https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c),
+([CRTP](https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c)),
 instead of having it as a separate entity.
 
 {% highlight cpp linenos %}
 template <class Base, class... Args>
 class Factory {
 public:
-  static std::unique_ptr<Base> make(const std::string &s, Args... args) {
-    return data().at(s)(args...);
+  template <class ... T>
+  static std::unique_ptr<Base> make(const std::string &s, T&&... args) {
+      return data().at(s)(std::forward<T>(args)...);
   }
 
   friend Base;
@@ -121,7 +122,7 @@ class Factory {
       const auto name = T::name;
       Factory::data()[name] =
           [](Args... args) -> std::unique_ptr<Base> {
-        return std::make_unique<T>(args...);
+        return std::make_unique<T>(std::forward<Args>(args)...);
       };
       return true;
     }
@@ -145,6 +146,11 @@ instantiate the template, including the `registered` member, causing it to get
 initialized and causing the derived class to get registered. We assume (for now)
 that the derived class provides a static member `name` to indicate how it would
 like to be named in the factory.
+
+One quick note from the above is the use of `std::forward`. This is not actual
+perfect forwarding because `Args` are fixed by the class and not deduced by the
+function. However it is still necessary so that value and rvalue reference types
+get forwarded correctly.
 
 There's just one little problem: 1) and 2) are not compatible with one another!
 The CRTP pattern involves templates, and unused members of class templates are
@@ -194,7 +200,7 @@ We can then change `registerT`
     static bool registerT() {
       const auto name = demangle(typeid(T).name());
       Factory::data()[name] = [](Args... args) -> std::unique_ptr<Base> {
-        return std::make_unique<T>(args...);
+        return std::make_unique<T>(std::forward<Args>(args)...);
       };
       return true;
     }
@@ -266,12 +272,20 @@ public:
 ## Usage
 
 Finally, after building up that whole structure, we can see what user code looks
-like. The first piece of user code is the base class. That code could look like this:
+like. Remember that we have potentially two distinct users: the first user may
+be a library that wants to declare an interface, instantiates objects fulfilling
+the interface through a factory, and wants to allow clients to inject their own
+classes. The second user is a client of said library, who wants to create their
+own implementations of the interface. Of course, they could also be the same
+person as well; just a single developer trying to cleanly separate concerns.
+
+The first piece of user code is the base class. That code could look like this:
 
 {% highlight cpp linenos %}
 struct Animal : Factory<Animal, int> {
   Animal(Key) {}
   virtual void makeNoise() = 0;
+  virtual ~Animal() = default;
 };
 {% endhighlight %}
 
