@@ -3,7 +3,7 @@ layout: post
 title: "Unforgettable Factory Registration"
 ---
 
-Using a factory is a common pattern to use when we are working with polymorphic
+Using a factory is a common pattern when we are working with polymorphic
 objects. It exists to solve a very basic issue in C++: in order to construct
 something you must name its type. But the entire point of runtime polymorphism
 is often that we cannot name the type, because we won't know it until runtime.
@@ -20,7 +20,7 @@ unique_ptr<Animal> makeAnimal(const string& type, int number)
 }
 {% endhighlight %}
 
-This isn't a great solution. In particular, we keep having to update this
+This often isn't a great solution. In particular, we keep having to update this
 central piece of code every time a new derived class gets written. Under the
 best of circumstances, this is merely irritating and code smell. However, in
 some cases it can be much worse. It's common for a library to provide an
