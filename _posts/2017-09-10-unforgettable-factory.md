@@ -12,7 +12,7 @@ The most basic factory would just consist of some `if` statements coupled
 together:
 
 {% highlight cpp linenos %}
-unique_ptr<Animal> makeAnimal(const std::string& type, int number)
+unique_ptr<Animal> makeAnimal(const string& type, int number)
 {
   if (type == "Dog") return make_unique<Dog>(number);
   if (type == "Cat") return make_unique<Cat>(number);
@@ -37,10 +37,10 @@ This is usually by done changing the logic of the factory from code---multiple
 like this:
 
 {% highlight cpp linenos %}
-std::unordered_map<string, unique_ptr<Animal>(*)(int)> factory_map;
+unordered_map<string, unique_ptr<Animal>(*)(int)> factory_map;
 factory_map["Dog"] = Dog::make;
 factory_map["Cat"] = Cat::make;
-std::unique_ptr<Animal> makeAnimal(const std::string& type, int number)
+unique_ptr<Animal> makeAnimal(const string& type, int number)
 {
   return factory_map.at(type)(number);
 }
@@ -54,7 +54,7 @@ incorrectly. Overwhelmingly, I've seen macros used for this purpose; something
 along the lines of:
 
 {% highlight cpp linenos %}
-class Dog : Animal {
+class Dog : public Animal {
 };
 REGISTER_CLASS(factory_map, Dog);
 {% endhighlight %}
@@ -62,6 +62,32 @@ REGISTER_CLASS(factory_map, Dog);
 It has to be done manually for each derived class and it's easy to forget. We're
 going to look at how to automate this process, removing boilerplate and
 eliminating the possibility of mistakes.
+
+## Goal
+
+Wouldn't it be magical, if instead of worrying about macros, or some global
+dictionary, we instead could just push everything into a library? Users could
+just write code similar to this:
+
+{% highlight cpp linenos %}
+struct Animal : Factory<Animal, int> {
+  virtual void makeNoise() = 0;
+  ...
+};
+
+class Dog : public Animal::Registrar<Dog> {
+public:
+  Dog(int x);
+  void makeNoise() override;
+  ...
+};
+
+auto x = Animal::make("Dog", 3);
+x->makeNoise();
+{% endhighlight %}
+
+No macros, no magic, no problems. The end user is just solving their problem. Does this seem
+to good to be true? Well, it's not.
 
 ## Solution Sketch
 
@@ -77,18 +103,18 @@ template <class Base, class... Args>
 class Factory {
 public:
   template <class ... T>
-  static std::unique_ptr<Base> make(const std::string &s, T&&... args) {
-      return data().at(s)(std::forward<T>(args)...);
+  static unique_ptr<Base> make(const string &s, T&&... args) {
+      return data().at(s)(forward<T>(args)...);
   }
 
   friend Base;
 
 private:
-  using FuncType = std::unique_ptr<Base> (*)(Args...);
+  using FuncType = unique_ptr<Base> (*)(Args...);
   Factory() = default;
 
   static auto &data() {
-    static std::unordered_map<std::string, FuncType> s;
+    static unordered_map<string, FuncType> s;
     return s;
   }
 };
@@ -121,8 +147,8 @@ class Factory {
     static bool registerT() {
       const auto name = T::name;
       Factory::data()[name] =
-          [](Args... args) -> std::unique_ptr<Base> {
-        return std::make_unique<T>(std::forward<Args>(args)...);
+          [](Args... args) -> unique_ptr<Base> {
+        return make_unique<T>(forward<Args>(args)...);
       };
       return true;
     }
@@ -147,7 +173,7 @@ initialized and causing the derived class to get registered. We assume (for now)
 that the derived class provides a static member `name` to indicate how it would
 like to be named in the factory.
 
-One quick note from the above is the use of `std::forward`. This is not actual
+One quick note from the above is the use of `forward`. This is not actual
 perfect forwarding because `Args` are fixed by the class and not deduced by the
 function. However it is still necessary so that value and rvalue reference types
 get forwarded correctly.
@@ -156,7 +182,7 @@ There's just one little problem: 1) and 2) are not compatible with one another!
 The CRTP pattern involves templates, and unused members of class templates are
 not instantiated. This seems annoying but it's quite useful in other contexts:
 it allows us to write class templates that may have only part of their members
-usable for certain parameters; for example a `std::vector` will not be copyable
+usable for certain parameters; for example a `vector` will not be copyable
 if its contained type is not copyable, which works because the copy constructor
 is not instantiated unless it's used.
 
@@ -183,12 +209,12 @@ disabling RTTI. Based on the discussion
 we can write:
 
 {% highlight cpp linenos %}
-std::string demangle(const char *name) {
+string demangle(const char *name) {
 
   int status = -4;
 
-  std::unique_ptr<char, void (*)(void *)> res{
-      abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
+  unique_ptr<char, void (*)(void *)> res{
+      abi::__cxa_demangle(name, NULL, NULL, &status), free};
 
   return (status == 0) ? res.get() : name;
 }
@@ -199,15 +225,15 @@ We can then change `registerT`
 {% highlight cpp linenos %}
     static bool registerT() {
       const auto name = demangle(typeid(T).name());
-      Factory::data()[name] = [](Args... args) -> std::unique_ptr<Base> {
-        return std::make_unique<T>(std::forward<Args>(args)...);
+      Factory::data()[name] = [](Args... args) -> unique_ptr<Base> {
+        return make_unique<T>(forward<Args>(args)...);
       };
       return true;
     }
 {% endhighlight %}
 
 As I've implemented it here, the name will include the namespace. Obviously
-that's simply enough to remove if you don't want it to include that.
+that's simple enough to remove if you don't want it to include that.
 
 ## Better safety
 
@@ -247,28 +273,6 @@ The user base class will need to declare the constructor to take a `Key`, which
 in turn can only be created by `Registrar`. Thus, no class can derive without
 going through `Registrar`.
 
-## A small bonus
-
-If we're using a factory, it means we are interested in polymorphic creation and
-ownership of classes. Along with this, usually comes polymorphic copying. Since
-we're already using the CRTP pattern, we can add a `clone` method to
-`Registrar` and `Factory`:
-
-{% highlight cpp linenos %}
-template <class Base, class... Args>
-class Factory {
-public:
-  virtual std::unique_ptr<Base> clone() const = 0;
-  ...
-  template <class T>
-  struct Registrar {
-  ...
-    std::unique_ptr<Base> clone() const override {
-      return std::make_unique<T>(static_cast<const T &>(*this));
-    }
-  ...
-{% endhighlight %}
-
 ## Usage
 
 Finally, after building up that whole structure, we can see what user code looks
@@ -279,7 +283,9 @@ classes. The second user is a client of said library, who wants to create their
 own implementations of the interface. Of course, they could also be the same
 person as well; just a single developer trying to cleanly separate concerns.
 
-The first piece of user code is the base class. That code could look like this:
+Our final code looks pretty well identical to our dream that discussed in the
+Goal section! The first piece of user code is the base class. That code could
+look like this:
 
 {% highlight cpp linenos %}
 struct Animal : Factory<Animal, int> {
@@ -301,15 +307,15 @@ class Dog : public Animal::Registrar<Dog> {
 public:
   Dog(int x) : m_x(x) {}
 
-  void makeNoise() { std::cerr << "Dog: " << m_x << "\n"; }
+  void makeNoise() override { cerr << "Dog: " << m_x << "\n"; }
 
 private:
   int m_x;
 };
 {% endhighlight %}
 
-Every single line of code here implements some kind of functional for the
-derived; boilerplate here is at an absolute minimum. Beyond automatic
+Every single line of code here implements some kind of functionality for the
+derived class; boilerplate here is at an absolute minimum. Beyond automatic
 registration, we also protect at compile time against a number of errors:
 
  - It's not possible to have `Dog` inherit from `Animal` directly
@@ -326,8 +332,6 @@ int main() {
   auto y = Animal::make("Cat", 2);
   x->makeNoise();
   y->makeNoise();
-  x = y->clone();
-  x->makeNoise();
 }
 {% endhighlight %}
 
@@ -336,14 +340,13 @@ Which prints out:
 ```
 Dog: 3
 Cat: 2
-Cat: 2
 ```
 
 as you would expect. See a full copy of the working code
-[here](http://coliru.stacked-crooked.com/a/bb60d154a3baaab5).
+[here](http://coliru.stacked-crooked.com/a/11473a649e402831).
 
 We've managed here to separate out much of the boilerplate that often goes with
 writing polymorphic code in C++, with a relatively small and simple amount of
 code. As we can see, the user code that defines the interface and various
-implementations can focus on the required logic, and get many pieces of
-desirable interface for free.
+implementations can focus on the required logic, and get polymorphic
+construction for free.
