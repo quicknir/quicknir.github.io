@@ -3,3 +3,5 @@ gem 'github-pages', group: :jekyll_plugins
 group :jekyll_plugins do
   gem 'hawkins'
 end
+
+gem "webrick", "~> 1.8"

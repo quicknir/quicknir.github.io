@@ -8,7 +8,7 @@ tagline:             'Fit for computer consumption'
 description:         'Code, math, and all that good stuff.'
 url:                 http://quicknir.github.io
 baseurl:             ''
-gems: [jekyll-paginate hawkins]
+plugins: [jekyll-paginate hawkins]
 paginate:            5
 future: true
 
