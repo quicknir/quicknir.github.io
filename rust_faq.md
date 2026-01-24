@@ -24,4 +24,6 @@ let x: i64 = 5;
 
 ## Is control flow in Rust similar to C++?
 
-Blah blah why am I writing this.
+> Some side commentary
+
+Blah blah why am I writing this. An internal link [here](#how-do-i-declare-variables).

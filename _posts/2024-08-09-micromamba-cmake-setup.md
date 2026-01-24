@@ -27,8 +27,10 @@ mkdir asp && cd asp
 ```
 
 {% highlight bash %}
+{% raw %}
 cd # Switch to home directory
 mkdir asp && cd asp
+{% endraw %}
 {% endhighlight %}
 
 The command given is for Linux x86_64....
